@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   namespace :admin do
     get 'dashboards/index', to: 'dashboards#index'
+    resources :budget_categories, only: %i[index new create edit update destroy]
   end
   resources :dashboards
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
