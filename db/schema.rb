@@ -10,12 +10,42 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 20_250_709_142_359) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_09_151049) do
   # These are extensions that must be enabled in order to support this database
-  enable_extension 'pg_catalog.plpgsql'
+  enable_extension "pg_catalog.plpgsql"
 
-  create_table 'dashboards', force: :cascade do |t|
-    t.datetime 'created_at', null: false
-    t.datetime 'updated_at', null: false
+  create_table "budget_categories", force: :cascade do |t|
+    t.string "name"
+    t.decimal "spending_limit_percentage"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
+
+  create_table "budget_cycles", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "total_budget", precision: 10, scale: 2, null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "budgets", force: :cascade do |t|
+    t.string "title", null: false
+    t.decimal "total_amount", precision: 10, scale: 2, null: false
+    t.bigint "budget_category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "budget_cycle_id", null: false
+    t.index ["budget_category_id"], name: "index_budgets_on_budget_category_id"
+    t.index ["budget_cycle_id"], name: "index_budgets_on_budget_cycle_id"
+  end
+
+  create_table "dashboards", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_foreign_key "budgets", "budget_categories"
+  add_foreign_key "budgets", "budget_cycles"
 end
