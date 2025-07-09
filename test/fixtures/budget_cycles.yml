@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  total_budget: 9.99
+  start_date: 2025-07-09
+  end_date: 2025-07-09
+
+two:
+  name: MyString
+  total_budget: 9.99
+  start_date: 2025-07-09
+  end_date: 2025-07-09
