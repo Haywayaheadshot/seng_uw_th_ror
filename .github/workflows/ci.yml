@@ -49,53 +49,57 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-
   test:
-    runs-on: ubuntu-latest
+     name: RSpec Test Suite
+     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+     services:
+       postgres:
+         image: postgres:14
+         env:
+           POSTGRES_USER: postgres
+           POSTGRES_PASSWORD: postgres
+           POSTGRES_DB: seng_uw_th_ror_test
+         ports:
+           - 5432:5432
+         options: >-
+           --health-cmd pg_isready
+           --health-interval 10s
+           --health-timeout 5s
+           --health-retries 5
 
-      # redis:
-      #   image: redis
-      #   ports:
-      #     - 6379:6379
-      #   options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+     env:
+       RAILS_ENV: test
+       DATABASE_URL: postgres://postgres:postgres@localhost:5432/seng_uw_th_ror_test
 
-    steps:
-      - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config google-chrome-stable
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v4
 
-      - name: Checkout code
-        uses: actions/checkout@v4
+       - name: Set up Ruby
+         uses: ruby/setup-ruby@v1
+         with:
+           ruby-version: .ruby-version
+           bundler-cache: true
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: .ruby-version
-          bundler-cache: true
+       - name: Install Chrome
+         run: |
+           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+           sudo apt install -y ./google-chrome-stable_current_amd64.deb
 
-      - name: Prepare test database
-        run: bin/rails db:create db:schema:load RAILS_ENV=test
+       - name: Install dependencies
+         run: sudo apt-get update && sudo apt-get install -y libpq-dev
 
-      - name: Run tests
-        env:
-          RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
-          # REDIS_URL: redis://localhost:6379/0
-        run: bundle exec rspec
+       - name: Prepare test database
+         run: bin/rails db:create db:schema:load
 
-      - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: screenshots
-          path: ${{ github.workspace }}/tmp/screenshots
-          if-no-files-found: ignore
+       - name: Run tests
+         run: bundle exec rspec
+
+       - name: Upload screenshots if tests fail
+         if: failure()
+         uses: actions/upload-artifact@v4
+         with:
+           name: screenshots
+           path: tmp/screenshots
+           if-no-files-found: ignore
