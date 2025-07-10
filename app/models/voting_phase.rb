@@ -12,7 +12,7 @@ class VotingPhase < ApplicationRecord
   validates :participant_eligibility, presence: true
   validate :dates_within_budget_cycle
 
-  scope :active, -> { where('start_date <= ? AND end_date >= ?', Date.today, Date.today) }
+  scope :active, -> { where('voting_phases.start_date <= ? AND voting_phases.end_date >= ?', Date.today, Date.today) }
 
   def active?
     Date.today.between?(start_date, end_date)

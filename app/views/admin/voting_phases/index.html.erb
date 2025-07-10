@@ -1,0 +1,43 @@
+<div class="min-h-screen bg-gray-100">
+  <header class="bg-blue-600 text-white p-4">
+    <h1 class="text-2xl font-bold text-center md:text-left">Voting Phases for <%= @budget_cycle.name %></h1>
+  </header>
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white shadow-md rounded-lg">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="py-2 px-4 text-left">Name</th>
+            <th class="py-2 px-4 text-left">Status</th>
+            <th class="py-2 px-4 text-left">Start Date</th>
+            <th class="py-2 px-4 text-left">End Date</th>
+            <th class="py-2 px-4 text-left">Voting Rules</th>
+            <th class="py-2 px-4 text-left">Eligibility</th>
+            <th class="py-2 px-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @voting_phases.each do |phase| %>
+            <tr class="border-b">
+              <td class="py-2 px-4"><%= phase.name %></td>
+              <td class="py-2 px-4"><%= humanize_phase_status(phase) %></td>
+              <td class="py-2 px-4"><%= phase.start_date %></td>
+              <td class="py-2 px-4"><%= phase.end_date %></td>
+              <td class="py-2 px-4"><%= format_voting_rules(phase) %></td>
+              <td class="py-2 px-4"><%= format_participant_eligibility(phase) %></td>
+              <td class="py-2 px-4">
+                <%= link_to 'Show', admin_budget_cycle_voting_phase_path(@budget_cycle, phase), class: "text-blue-500 hover:underline" %>
+                <%= link_to 'Edit', edit_admin_budget_cycle_voting_phase_path(@budget_cycle, phase), class: "text-blue-500 hover:underline" %>
+                <%= link_to 'Delete', admin_budget_cycle_voting_phase_path(@budget_cycle, phase), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: "text-red-500 hover:underline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-4">
+      <%= link_to 'New Voting Phase', new_admin_budget_cycle_voting_phase_path(@budget_cycle), class: "block bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 text-center md:text-left" %>
+      <%= link_to 'Dashboard', admin_dashboards_index_path, class: "block bg-gray-500 text-blue-500 py-2 px-4 rounded hover:bg-gray-600 text-center md:text-left mt-2" %>
+    </div>
+  </main>
+</div>

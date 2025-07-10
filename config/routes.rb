@@ -2,6 +2,12 @@ Rails.application.routes.draw do
   namespace :admin do
     get 'dashboards/index', to: 'dashboards#index'
     resources :budget_categories, only: %i[index new create edit update destroy]
+
+    resources :budget_cycles, only: %i[index new create edit update destroy show]
+
+    resources :budget_cycles do
+      resources :voting_phases
+    end
   end
   resources :dashboards
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -15,5 +21,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root 'dashboards#index'
+  root 'admin/dashboards#index'
 end

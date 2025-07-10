@@ -1,0 +1,12 @@
+<h1>Voting Phase: <%= @voting_phase.name %></h1>
+<p><strong>Budget Cycle:</strong> <%= @budget_cycle.name %></p>
+<p><strong>Status:</strong> <%= @voting_phase.phase_status.humanize %></p>
+<p><strong>Start Date:</strong> <%= @voting_phase.start_date %></p>
+<p><strong>End Date:</strong> <%= @voting_phase.end_date %></p>
+<p><strong>Max Votes:</strong> <%= @voting_phase.voting_rules['max_votes'] %></p>
+<p><strong>Minimum Age:</strong> <%= @voting_phase.participant_eligibility['min_age'] %></p>
+<p><strong>Active:</strong> <%= @voting_phase.active? ? 'Yes' : 'No' %></p>
+
+<%= link_to 'Edit', edit_admin_budget_cycle_voting_phase_path(@budget_cycle, @voting_phase) %>
+<%= link_to 'Back', admin_budget_cycle_voting_phases_path(@budget_cycle) %>
+<%= link_to 'Delete', admin_budget_cycle_voting_phase_path(@budget_cycle, @voting_phase), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: "text-red-500 hover:underline" %>

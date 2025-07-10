@@ -1,0 +1,46 @@
+<%= form_with model: @voting_phase, url: @voting_phase.persisted? ? admin_budget_cycle_voting_phase_path(@budget_cycle, @voting_phase) : admin_budget_cycle_voting_phases_path(@budget_cycle), local: true, class: "space-y-4" do |form| %>
+  <% if @voting_phase.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <h2><%= pluralize(@voting_phase.errors.count, "error") %> prohibited this voting phase from being saved:</h2>
+      <ul class="list-disc ml-5">
+        <% @voting_phase.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.text_field :name, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :start_date, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.date_field :start_date, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :end_date, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.date_field :end_date, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :phase_status, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.select :phase_status, phase_status_options, {}, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label 'voting_rules[max_votes]', 'Max Votes', class: "block text-sm font-medium text-gray-700" %>
+    <%= form.number_field :voting_rules, value: @voting_phase.voting_rules['max_votes'], name: 'voting_phase[voting_rules][max_votes]', class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label 'participant_eligibility[min_age]', 'Minimum Age', class: "block text-sm font-medium text-gray-700" %>
+    <%= form.number_field :participant_eligibility, value: @voting_phase.participant_eligibility['min_age'], name: 'voting_phase[participant_eligibility][min_age]', class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.submit class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600" %>
+  </div>
+<% end %>
