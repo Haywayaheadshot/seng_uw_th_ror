@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_09_151049) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_10_005510) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,6 +19,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_151049) do
     t.decimal "spending_limit_percentage"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_budget_categories_on_deleted_at"
   end
 
   create_table "budget_cycles", force: :cascade do |t|
@@ -28,6 +30,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_151049) do
     t.date "end_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "deleted_at"
+    t.index ["deleted_at"], name: "index_budget_cycles_on_deleted_at"
   end
 
   create_table "budgets", force: :cascade do |t|
@@ -37,8 +41,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_09_151049) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "budget_cycle_id", null: false
+    t.datetime "deleted_at"
     t.index ["budget_category_id"], name: "index_budgets_on_budget_category_id"
     t.index ["budget_cycle_id"], name: "index_budgets_on_budget_cycle_id"
+    t.index ["deleted_at"], name: "index_budgets_on_deleted_at"
   end
 
   create_table "dashboards", force: :cascade do |t|

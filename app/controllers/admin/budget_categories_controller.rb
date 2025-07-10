@@ -2,21 +2,13 @@ class Admin::BudgetCategoriesController < ApplicationController
   def index
     presenter = BudgetCategoriesPresenter.new(search: params[:search], budget_cycle_id: params[:budget_cycle_id])
     @budget_categories = presenter.categories
-    @budget_cycle = presenter.budget_cycle || BudgetCycle.last
+    @budget_cycle = presenter.budget_cycle || BudgetCycle.without_deleted.last || BudgetCycle.new(total_budget: 0, name: 'No Cycle')
     respond_to do |format|
       format.html
-      format.json do
-        render json: @budget_categories.map { |category|
-          category.as_json.except('spending_limit_percentage').merge(
-            'spending_limit_percentage' => category.spending_limit_percentage.to_f,
-            'utilization_rate' => category.utilization_rate(@budget_cycle).to_f
-          )
-        }
-      end
+      format.json { render json: presenter.to_json }
     end
   end
 
-  # Other actions unchanged
   def new
     @budget_category = BudgetCategory.new
     respond_to do |format|

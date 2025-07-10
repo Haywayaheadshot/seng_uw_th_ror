@@ -6,6 +6,7 @@ RSpec.describe Admin::BudgetCategoriesController, type: :controller do
   describe 'GET #index' do
     let!(:category1) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40.0) }
     let!(:category2) { BudgetCategory.create!(name: 'Social Programs', spending_limit_percentage: 30.0) }
+    let(:presenter) { BudgetCategoriesPresenter.new(budget_cycle_id: budget_cycle.id) }
 
     before do
       category1.budgets.create!(title: 'Road Repair', total_amount: 200_000, budget_cycle: budget_cycle)
@@ -18,7 +19,8 @@ RSpec.describe Admin::BudgetCategoriesController, type: :controller do
     end
 
     it 'returns all categories as JSON with utilization_rate' do
-      get :index, format: :json
+      get :index, format: :json, params: { budget_cycle_id: budget_cycle.id }
+      expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to eq(
         [
           { 'id' => category1.id, 'name' => 'Infrastructure', 'spending_limit_percentage' => 40.0, 'utilization_rate' => 20.0, 'created_at' => category1.created_at.as_json,
@@ -27,14 +29,24 @@ RSpec.describe Admin::BudgetCategoriesController, type: :controller do
             'updated_at' => category2.updated_at.as_json }
         ]
       )
-      expect(response).to have_http_status(:ok)
     end
 
     it 'filters categories by search query as JSON' do
-      get :index, params: { search: 'Infra' }, format: :json
+      get :index, format: :json, params: { search: 'Infra', budget_cycle_id: budget_cycle.id }
+      expect(response).to have_http_status(:ok)
       expect(response.parsed_body).to eq(
         [{ 'id' => category1.id, 'name' => 'Infrastructure', 'spending_limit_percentage' => 40.0, 'utilization_rate' => 20.0, 'created_at' => category1.created_at.as_json,
            'updated_at' => category1.updated_at.as_json }]
+      )
+    end
+
+    it 'returns correct JSON format' do
+      expect(presenter.to_json).to include(
+        a_hash_including(
+          'name' => 'Infrastructure',
+          'spending_limit_percentage' => 40.0,
+          'utilization_rate' => 20.0
+        )
       )
     end
   end

@@ -1,4 +1,6 @@
 class Budget < ApplicationRecord
+  acts_as_paranoid
+
   belongs_to :budget_category
   belongs_to :budget_cycle
   validates :title, presence: true

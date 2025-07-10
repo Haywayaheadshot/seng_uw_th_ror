@@ -1,4 +1,6 @@
 class BudgetCategory < ApplicationRecord
+  acts_as_paranoid
+
   validates :name, presence: true, uniqueness: { message: 'already exists. Please choose a different name or edit the existing category.' }
   validates :spending_limit_percentage, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
   has_many :budgets, dependent: :destroy
