@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_10_093643) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -34,6 +34,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_093643) do
     t.index ["deleted_at"], name: "index_budget_cycles_on_deleted_at"
   end
 
+  create_table "budget_projects", force: :cascade do |t|
+    t.string "name", null: false
+    t.decimal "proposed_budget", precision: 15, scale: 2, null: false
+    t.bigint "budget_cycle_id", null: false
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_cycle_id"], name: "index_budget_projects_on_budget_cycle_id"
+    t.index ["deleted_at"], name: "index_budget_projects_on_deleted_at"
+  end
+
   create_table "budgets", force: :cascade do |t|
     t.string "title", null: false
     t.decimal "total_amount", precision: 10, scale: 2, null: false
@@ -52,6 +63,28 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_093643) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "participants", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "age", null: false
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["deleted_at"], name: "index_participants_on_deleted_at"
+  end
+
+  create_table "votes", force: :cascade do |t|
+    t.bigint "voting_phase_id", null: false
+    t.bigint "budget_project_id", null: false
+    t.bigint "participant_id", null: false
+    t.datetime "deleted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["budget_project_id"], name: "index_votes_on_budget_project_id"
+    t.index ["deleted_at"], name: "index_votes_on_deleted_at"
+    t.index ["participant_id"], name: "index_votes_on_participant_id"
+    t.index ["voting_phase_id"], name: "index_votes_on_voting_phase_id"
+  end
+
   create_table "voting_phases", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "budget_cycle_id", null: false
@@ -67,7 +100,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_093643) do
     t.index ["deleted_at"], name: "index_voting_phases_on_deleted_at"
   end
 
+  add_foreign_key "budget_projects", "budget_cycles"
   add_foreign_key "budgets", "budget_categories"
   add_foreign_key "budgets", "budget_cycles"
+  add_foreign_key "votes", "budget_projects"
+  add_foreign_key "votes", "participants"
+  add_foreign_key "votes", "voting_phases"
   add_foreign_key "voting_phases", "budget_cycles"
 end
