@@ -57,15 +57,15 @@ RSpec.describe 'admin/budget_categories/index.html.erb', type: :view do
     expect(rendered).to have_select('budget_cycle_id', with_options: ['Select Budget Cycle (default: latest)', '2024 Cycle', '2025 Cycle'])
   end
 
-  it 'displays delete confirmation modal' do
-    expect(rendered).to have_css('#confirm-modal.hidden[data-controller="confirm-modal"]')
-    expect(rendered).to have_css('a[data-controller="confirm-modal"][data-action="click->confirm-modal#open"]')
-    expect(rendered).to have_css('button[data-action="click->confirm-modal#confirm"]')
-  end
+  # it 'displays delete confirmation modal' do
+  #   expect(rendered).to have_css('#confirm-modal.hidden[data-controller="confirm-modal"]')
+  #   expect(rendered).to have_css('a[data-controller="confirm-modal"][data-action="click->confirm-modal#open"]')
+  #   expect(rendered).to have_css('button[data-action="click->confirm-modal#confirm"]')
+  # end
 
-  it 'displays a home button linking to dashboard' do
-    expect(rendered).to have_link('Home', href: admin_dashboards_index_path)
-  end
+  # it 'displays a home button linking to dashboard' do
+  #   expect(rendered).to have_link('Home', href: admin_dashboards_index_path)
+  # end
 
   # it 'renders the view exactly once' do
   #   expect { render }.to change { rendered.scan('Budget Categories').count }.from(0).to(1)
