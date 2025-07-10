@@ -7,4 +7,8 @@ class BudgetCycle < ApplicationRecord
   validates :total_budget, presence: true, numericality: { greater_than: 0 }
   validates :start_date, presence: true
   validates :end_date, presence: true
+
+  def current_voting_phase
+    voting_phases.active.order(:start_date).first
+  end
 end
