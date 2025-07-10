@@ -1,4 +1,5 @@
 require_relative 'boot'
+require 'paranoia'
 
 require 'rails/all'
 
@@ -23,5 +24,6 @@ module SengUwThRor
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+    config.autoload_paths << Rails.root.join('app/presenters')
   end
 end

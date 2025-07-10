@@ -49,6 +49,11 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem 'rubocop-rails-omakase', require: false
+
+  gem 'rspec-rails', '~> 6.0'
+
+  # Gemfile
+  gem 'rails-controller-testing'
 end
 
 group :development do
@@ -61,3 +66,9 @@ group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
 end
+
+gem 'tailwindcss-ruby', '~> 4.1'
+
+gem 'tailwindcss-rails', '~> 4.3'
+
+gem 'paranoia', '~> 3.0'
