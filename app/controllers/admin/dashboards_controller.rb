@@ -1,8 +1,13 @@
 module Admin
   class DashboardsController < ApplicationController
+    before_action :restrict_to_admins
+
     def index
-      @budget_cycles = BudgetCycle.all.order('budget_cycles.start_date')
-      @active_phases = VotingPhase.active.includes(:budget_cycle).order('budget_cycles.start_date')
+      dashboard_query = ::DashboardQuery.new
+      @budget_cycles = dashboard_query.active_budget_cycles
+      @active_phases = dashboard_query.active_phases
+      @voting_reports = dashboard_query.voting_reports
+
       respond_to do |format|
         format.html
         format.json do
@@ -12,6 +17,12 @@ module Admin
           }
         end
       end
+    end
+
+    private
+
+    def restrict_to_admins
+      redirect_to root_path, alert: 'Access denied' unless session[:admin]
     end
   end
 end

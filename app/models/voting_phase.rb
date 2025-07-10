@@ -21,6 +21,21 @@ class VotingPhase < ApplicationRecord
     Date.today.between?(start_date, end_date)
   end
 
+  def transition_to_next_phase
+    return unless phase_status_pre_selection? || phase_status_final_voting?
+
+    next_phase = budget_cycle.voting_phases.where('start_date > ?', end_date).order(:start_date).first
+    return unless next_phase
+
+    if phase_status_pre_selection?
+      next_phase.update(phase_status: :final_voting)
+      update(phase_status: :implementation)
+    elsif phase_status_final_voting?
+      next_phase.update(phase_status: :implementation)
+      update(phase_status: :implementation)
+    end
+  end
+
   private
 
   def dates_within_budget_cycle

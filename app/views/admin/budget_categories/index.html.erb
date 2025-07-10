@@ -5,17 +5,6 @@
   <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
     <% if notice %>
       <p id="notice" class="text-green-600 mb-4 bg-green-100 p-3 rounded transition-opacity duration-500" data-controller="fade"><%= notice %></p>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const notice = document.getElementById('notice');
-          if (notice) {
-            setTimeout(() => {
-              notice.style.display = 'none';
-              setTimeout(() => notice.remove(), 500);
-            }, 3000);
-          }
-        });
-      </script>
     <% end %>
     <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-4">
       <%= link_to "Dashboard", admin_dashboards_index_path, class: "bg-white text-blue-600 py-2 px-4 rounded hover:bg-gray-200 mb-4 sm:mb-0" %>
@@ -53,7 +42,7 @@
               </td>
               <td class="py-2 px-4 flex space-x-2">
                 <%= link_to "Edit", edit_admin_budget_category_path(category), class: "text-blue-500 hover:underline" %>
-                <%= link_to "Delete", admin_budget_category_path(category), data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete #{category.name}? This will also soft-delete #{category.budgets.count} associated budget(s)." }, class: "text-red-500 hover:underline" %>
+                <%= link_to "Delete", admin_budget_category_path(category), data: { turbo_method: :delete }, class: "text-red-500 hover:underline" %>
               </td>
             </tr>
           <% end %>

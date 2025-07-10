@@ -1,0 +1,4 @@
+update_voting_phase_status:
+  every: '15m'
+  class: UpdateVotingPhaseStatusJob
+  queue: default

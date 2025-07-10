@@ -9,9 +9,8 @@ Rails.application.routes.draw do
       resources :voting_phases
     end
   end
-  resources :votes, only: [:create]
 
-  resources :budget_cycles, only: [] do
+  resources :budget_cycles, only: [:index] do
     resources :votes, only: %i[new create index]
   end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -25,5 +24,5 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root 'admin/dashboards#index'
+  root 'budget_cycles#index'
 end

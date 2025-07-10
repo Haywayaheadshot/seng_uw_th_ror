@@ -8,6 +8,8 @@ class Vote < ApplicationRecord
   validate :within_voting_phase_dates
   validate :participant_eligible
   validate :within_max_votes
+  validates :participant_id, presence: true
+  validates :budget_project_id, presence: true
 
   private
 

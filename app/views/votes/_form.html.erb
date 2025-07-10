@@ -1,14 +1,10 @@
-<div id="vote_form">
-  <% if flash[:alert] %>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-      <%= flash[:alert] %>
-    </div>
-  <% end %>
-  <%= form_with model: vote, url: budget_cycle_votes_path(budget_cycle), local: true, class: "space-y-4" do |form| %>
+<div id="vote_form" class="space-y-4">
+  <%= render partial: 'shared/flash' %>
+  <%= form_with model: vote, url: budget_cycle_votes_path(budget_cycle), data: { turbo: true }, class: "space-y-4" do |form| %>
     <% if vote.errors.any? %>
-      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-        <h2><%= pluralize(vote.errors.count, "error") %> prohibited this vote from being saved:</h2>
-        <ul class="list-disc ml-5">
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-sm">
+        <h2 class="text-sm font-medium"><%= pluralize(vote.errors.count, "error") %> prohibited this vote from being saved:</h2>
+        <ul class="list-disc ml-5 mt-2">
           <% vote.errors.full_messages.each do |message| %>
             <li><%= message %></li>
           <% end %>
@@ -18,18 +14,18 @@
 
     <div>
       <%= form.label :participant_id, "Participant", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.collection_select :participant_id, Participant.where(deleted_at: nil).order(:name), :id, :name, { prompt: "Select a participant" }, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+      <%= form.collection_select :participant_id, Participant.where(deleted_at: nil).order(:name), :id, :name, { prompt: "Select a participant" }, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500", required: true %>
     </div>
 
     <div>
       <%= form.label :budget_project_id, "Project", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.collection_select :budget_project_id, budget_projects.order(:name), :id, :name, { prompt: "Select a project" }, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+      <%= form.collection_select :budget_project_id, budget_projects.order(:name), :id, :name, { prompt: "Select a project" }, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500", required: true %>
     </div>
 
     <%= form.hidden_field :voting_phase_id, value: budget_cycle.current_voting_phase&.id %>
 
     <div>
-      <%= form.submit "Cast Vote", class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600" %>
+      <%= form.submit "Cast Vote", class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
     </div>
   <% end %>
 </div>

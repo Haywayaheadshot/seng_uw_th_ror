@@ -14,7 +14,7 @@ RSpec.describe Vote, type: :model do
     )
   end
   let(:budget_project) { BudgetProject.create!(budget_cycle: budget_cycle, name: 'Project A', proposed_budget: 100_000) }
-  let(:participant) { Participant.create!(name: 'John Doe', age: 25) }
+  let(:participant) { Participant.create!(name: 'Abubakar', age: 25) }
 
   describe 'validations' do
     let(:vote) { Vote.new(voting_phase: voting_phase, budget_project: budget_project, participant: participant, created_at: Time.current) }

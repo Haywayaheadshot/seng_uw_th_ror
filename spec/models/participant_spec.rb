@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Participant, type: :model do
   describe 'validations' do
-    let(:participant) { Participant.new(name: 'John Doe', age: 25) }
+    let(:participant) { Participant.new(name: 'Abubakar', age: 25) }
 
     it 'is valid with valid attributes' do
       expect(participant).to be_valid

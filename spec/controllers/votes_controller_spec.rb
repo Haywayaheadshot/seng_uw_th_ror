@@ -14,7 +14,7 @@ RSpec.describe VotesController, type: :controller do
     )
   end
   let(:budget_project) { BudgetProject.create!(budget_cycle: budget_cycle, name: 'Project A', proposed_budget: 100_000) }
-  let(:participant) { Participant.create!(name: 'John Doe', age: 25) }
+  let(:participant) { Participant.create!(name: 'Abubakar', age: 25) }
   let(:valid_params) { { vote: { budget_project_id: budget_project.id, participant_id: participant.id } } }
 
   describe 'GET #new' do
@@ -32,9 +32,9 @@ RSpec.describe VotesController, type: :controller do
     end
 
     context 'without active voting phase' do
-      it 'redirects to root with alert' do
+      it 'redirects to budget cycles index with alert' do
         get :new, params: { budget_cycle_id: budget_cycle.id }
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(budget_cycles_path)
         expect(flash[:alert]).to eq('No active voting phase available.')
       end
     end
@@ -93,14 +93,15 @@ RSpec.describe VotesController, type: :controller do
           post :create, params: { budget_cycle_id: budget_cycle.id, vote: { budget_project_id: budget_project.id, participant_id: nil } }, format: :turbo_stream
           expect(response).to have_http_status(:ok)
           expect(response.body).to include('vote_form')
+          expect(assigns(:budget_projects)).to include(budget_project)
         end
       end
     end
 
     context 'without active voting phase' do
-      it 'redirects to root with alert for html' do
+      it 'redirects to budget cycles index with alert for html' do
         post :create, params: { budget_cycle_id: budget_cycle.id, **valid_params }
-        expect(response).to redirect_to(root_path)
+        expect(response).to redirect_to(budget_cycles_path)
         expect(flash[:alert]).to eq('No active voting phase available.')
       end
 
