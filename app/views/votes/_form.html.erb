@@ -1,6 +1,6 @@
 <div id="vote_form" class="space-y-4">
   <%= render partial: 'shared/flash' %>
-  <%= form_with model: vote, url: budget_cycle_votes_path(budget_cycle), data: { turbo: true }, class: "space-y-4" do |form| %>
+  <%= form_with model: vote, url: vote.persisted? ? admin_budget_cycle_votes_path(budget_cycle) : budget_cycle_votes_path(budget_cycle), data: { turbo: true, turbo_frame: "vote_confirmation" }, class: "space-y-4" do |form| %>
     <% if vote.errors.any? %>
       <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-sm">
         <h2 class="text-sm font-medium"><%= pluralize(vote.errors.count, "error") %> prohibited this vote from being saved:</h2>
@@ -27,5 +27,8 @@
     <div>
       <%= form.submit "Cast Vote", class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500" %>
     </div>
+  <% end %>
+  <%= turbo_frame_tag "vote_confirmation" do %>
+    <%= render partial: 'index' if vote.persisted? %>
   <% end %>
 </div>

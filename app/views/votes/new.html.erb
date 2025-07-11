@@ -1,11 +1,15 @@
+<%= render 'shared/nav' %>
 <div class="min-h-screen bg-gray-100">
-  <header class="bg-blue-600 text-white p-4">
-    <h1 class="text-2xl font-bold text-center md:text-left">Cast Your Vote - <%= @voting_phase&.name || 'No Active Voting Phase' %></h1>
+  <header class="bg-blue-500 text-white p-4">
+    <h1 class="text-2xl font-bold text-center md:text-left">Cast Your Vote</h1>
   </header>
   <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-    <%= render partial: 'form', locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participant: @participant } %>
+    <%= turbo_frame_tag "flash_#{session.id}" do %>
+      <%= render partial: 'shared/flash' %>
+    <% end %>
+    <%= render 'form', vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects %>
     <div class="mt-4">
-      <%= link_to 'Back to Budget Cycles', budget_cycles_path, class: "block bg-gray-500 text-blue-500 py-2 px-4 rounded hover:bg-gray-600 text-center md:text-left" %>
+      <%= link_to 'Back to Budget Cycles', budget_cycles_path, class: 'bg-gray-500 text-blue-500 py-2 px-4 rounded hover:bg-gray-600' %>
     </div>
   </main>
 </div>

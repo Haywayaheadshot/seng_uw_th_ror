@@ -1,2 +1,6 @@
-:queues:
-  - default
+:schedule:
+         phase_transition_job:
+           cron: '0 0 * * *'
+           class: PhaseTransitionJob
+           queue: default
+           description: Transitions voting phases based on dates'

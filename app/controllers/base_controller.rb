@@ -1,8 +1,10 @@
 class BaseController < ApplicationController
+  # Remove Comment after creating authentication
+  # before_action :require_admin
+
   private
 
-  def set_budget_cycle
-    budget_cycle_id = params[:budget_cycle_id] || params[:id]
-    @budget_cycle = BudgetCycle.find(budget_cycle_id)
-  end
+  # def require_admin
+  #   redirect_to root_path, alert: 'Access denied.' unless current_user&.admin?
+  # end
 end

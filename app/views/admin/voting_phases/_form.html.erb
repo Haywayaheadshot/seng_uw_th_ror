@@ -27,7 +27,7 @@
 
   <div>
     <%= form.label :phase_status, class: "block text-sm font-medium text-gray-700" %>
-    <%= form.select :phase_status, phase_status_options, {}, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+    <%= form.select :phase_status, VotingPhase.phase_statuses.keys.map { |s| [s.humanize, s] }, {}, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
   </div>
 
   <div>

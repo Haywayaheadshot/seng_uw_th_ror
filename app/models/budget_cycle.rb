@@ -1,9 +1,9 @@
 class BudgetCycle < ApplicationRecord
   acts_as_paranoid
 
-  has_many :budgets, dependent: :destroy
-  has_many :voting_phases, dependent: :destroy
+  has_many :budget_categories, dependent: :destroy
   has_many :budget_projects, dependent: :destroy
+  has_many :voting_phases, dependent: :destroy
   has_many :votes, through: :voting_phases
 
   validates :name, presence: true

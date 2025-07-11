@@ -6,7 +6,7 @@ class DashboardQuery
   def active_budget_cycles
     BudgetCycle.where('start_date <= ? AND end_date >= ?', @current_date, @current_date)
       .where(deleted_at: nil)
-      .includes(voting_phases: :votes)
+      .includes(voting_phases: :votes, budget_projects: :votes)
   end
 
   def active_phases
@@ -23,7 +23,8 @@ class DashboardQuery
         budget_cycle: cycle,
         voting_phase: phase,
         vote_counts: vote_counts_for_phase(phase),
-        age_distribution: age_distribution_for_phase(phase)
+        age_distribution: age_distribution_for_phase(phase),
+        impact_metrics: impact_metrics_for_cycle(cycle)
       }
     end.compact
   end
@@ -32,7 +33,7 @@ class DashboardQuery
 
   def vote_counts_for_phase(phase)
     project_names = BudgetProject.where(id: Vote.where(voting_phase_id: phase.id, deleted_at: nil)
-                                                .select(:budget_project_id))
+                                        .select(:budget_project_id))
       .pluck(:id, :name)
       .to_h
     Vote.where(voting_phase_id: phase.id, deleted_at: nil)
@@ -51,5 +52,17 @@ class DashboardQuery
                  WHEN participants.age BETWEEN 35 AND 44 THEN '35-44'
                  ELSE '45+' END")
       .count
+  end
+
+  def impact_metrics_for_cycle(cycle)
+    cycle.budget_projects.approved.where(deleted_at: nil).map do |project|
+      {
+        name: project.name,
+        proposed_budget: project.proposed_budget,
+        estimated_beneficiaries: project.estimated_beneficiaries,
+        timeline: project.timeline,
+        sustainability_score: project.sustainability_score
+      }
+    end
   end
 end

@@ -1,0 +1,50 @@
+<%= render 'shared/nav' %>
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">New Budget Project</h1>
+  
+  <% if @budget_cycle.budget_categories.empty? %>
+    <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4" style="display: flex; flex-direction: column; flex-gap: 10px">
+      <p>No categories available for this budget cycle. Please create a category first.</p>
+      <%= link_to 'Create Category', new_admin_budget_category_path(budget_cycle_id: @budget_cycle.id), class: 'text-white bg-blue-500 py-2 px-4 rounded hover:bg-green-600 mb-4 inline-block', style: 'max-width: 200px' %>
+    </div>
+  <% else %>
+    <%= form_with model: @budget_project, url: admin_budget_cycle_budget_projects_path(@budget_cycle), local: true, class: "space-y-4" do |form| %>
+      <% if @budget_project.errors.any? %>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <h2><%= pluralize(@budget_project.errors.count, "error") %> prohibited this project from being saved:</h2>
+          <ul class="list-disc ml-5">
+            <% @budget_project.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+      <div>
+        <%= form.label :name, class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.text_field :name, required: true, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <div>
+        <%= form.label :proposed_budget, class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.number_field :proposed_budget, required: true, min: 0.01, step: 0.01, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <div>
+        <%= form.label :budget_category_id, 'Category', class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.select :budget_category_id, @budget_cycle.budget_categories.map { |c| [c.name, c.id] }, { prompt: 'Select a category' }, required: true, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <h3 class="text-lg font-medium">Impact Metrics</h3>
+      <div>
+        <%= form.label 'impact_metrics[estimated_beneficiaries]', 'Estimated Beneficiaries', class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.number_field :impact_metrics, name: 'budget_project[impact_metrics][estimated_beneficiaries]', value: @budget_project.impact_metrics&.dig('estimated_beneficiaries'), required: true, min: 0, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <div>
+        <%= form.label 'impact_metrics[timeline]', 'Timeline', class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.text_field :impact_metrics, name: 'budget_project[impact_metrics][timeline]', value: @budget_project.impact_metrics&.dig('timeline'), required: true, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <div>
+        <%= form.label 'impact_metrics[sustainability_score]', 'Sustainability Score (1-10)', class: 'block text-sm font-medium text-gray-700' %>
+        <%= form.number_field :impact_metrics, name: 'budget_project[impact_metrics][sustainability_score]', value: @budget_project.impact_metrics&.dig('sustainability_score'), required: true, min: 1, max: 10, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+      </div>
+      <%= form.submit 'Create Project', class: 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600' %>
+    <% end %>
+  <% end %>
+</div>

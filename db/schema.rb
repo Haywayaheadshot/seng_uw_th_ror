@@ -10,16 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_11_171135) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "budget_categories", force: :cascade do |t|
     t.string "name"
     t.decimal "spending_limit_percentage"
+    t.bigint "budget_cycle_id", null: false
+    t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "deleted_at"
+    t.index ["budget_cycle_id"], name: "index_budget_categories_on_budget_cycle_id"
     t.index ["deleted_at"], name: "index_budget_categories_on_deleted_at"
   end
 
@@ -28,9 +30,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
     t.decimal "total_budget", precision: 10, scale: 2, null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
+    t.datetime "deleted_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "deleted_at"
     t.index ["deleted_at"], name: "index_budget_cycles_on_deleted_at"
   end
 
@@ -38,24 +40,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
     t.string "name", null: false
     t.decimal "proposed_budget", precision: 15, scale: 2, null: false
     t.bigint "budget_cycle_id", null: false
+    t.bigint "budget_category_id", null: false
     t.datetime "deleted_at"
+    t.text "impact_metrics"
+    t.boolean "approved"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["budget_category_id"], name: "index_budget_projects_on_budget_category_id"
     t.index ["budget_cycle_id"], name: "index_budget_projects_on_budget_cycle_id"
     t.index ["deleted_at"], name: "index_budget_projects_on_deleted_at"
-  end
-
-  create_table "budgets", force: :cascade do |t|
-    t.string "title", null: false
-    t.decimal "total_amount", precision: 10, scale: 2, null: false
-    t.bigint "budget_category_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "budget_cycle_id", null: false
-    t.datetime "deleted_at"
-    t.index ["budget_category_id"], name: "index_budgets_on_budget_category_id"
-    t.index ["budget_cycle_id"], name: "index_budgets_on_budget_cycle_id"
-    t.index ["deleted_at"], name: "index_budgets_on_deleted_at"
   end
 
   create_table "dashboards", force: :cascade do |t|
@@ -70,6 +63,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_participants_on_deleted_at"
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.string "username", null: false
+    t.string "password_digest", null: false
+    t.boolean "admin", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["username"], name: "index_users_on_username", unique: true
   end
 
   create_table "votes", force: :cascade do |t|
@@ -100,9 +102,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_10_145334) do
     t.index ["deleted_at"], name: "index_voting_phases_on_deleted_at"
   end
 
+  add_foreign_key "budget_categories", "budget_cycles"
+  add_foreign_key "budget_projects", "budget_categories"
   add_foreign_key "budget_projects", "budget_cycles"
-  add_foreign_key "budgets", "budget_categories"
-  add_foreign_key "budgets", "budget_cycles"
   add_foreign_key "votes", "budget_projects"
   add_foreign_key "votes", "participants"
   add_foreign_key "votes", "voting_phases"

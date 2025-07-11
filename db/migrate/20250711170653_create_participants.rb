@@ -5,9 +5,8 @@ class CreateParticipants < ActiveRecord::Migration[8.0]
       t.integer :age, null: false
       t.datetime :deleted_at
 
+      t.index :deleted_at, name: 'index_participants_on_deleted_at'
       t.timestamps
     end
-
-    add_index :participants, :deleted_at
   end
 end

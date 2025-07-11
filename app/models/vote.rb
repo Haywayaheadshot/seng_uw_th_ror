@@ -1,6 +1,5 @@
 class Vote < ApplicationRecord
   acts_as_paranoid
-
   belongs_to :voting_phase
   belongs_to :budget_project
   belongs_to :participant
@@ -8,37 +7,30 @@ class Vote < ApplicationRecord
   validate :within_voting_phase_dates
   validate :participant_eligible
   validate :within_max_votes
-  validates :participant_id, presence: true
-  validates :budget_project_id, presence: true
 
   private
 
   def within_voting_phase_dates
     return unless voting_phase
 
-    return unless created_at && (created_at < voting_phase.start_date || created_at > voting_phase.end_date)
-
-    errors.add(:base, "Vote must be cast within the voting phase dates (#{voting_phase.start_date} to #{voting_phase.end_date})")
+    errors.add(:created_at, 'must be within voting phase dates') unless created_at&.between?(voting_phase.start_date, voting_phase.end_date)
   end
 
   def participant_eligible
-    return unless participant && voting_phase&.participant_eligibility
+    return unless voting_phase && participant
 
-    min_age = voting_phase.participant_eligibility['min_age']
-    return unless min_age && participant.age < min_age
-
-    errors.add(:participant, "must be at least #{min_age} years old")
+    min_age = voting_phase.participant_eligibility&.dig('min_age')&.to_i || 0
+    errors.add(:participant_id, "must be at least #{min_age} years old") if participant.age < min_age
   end
 
   def within_max_votes
-    return unless voting_phase&.voting_rules
+    return unless voting_phase && participant
 
-    max_votes = voting_phase.voting_rules['max_votes']
-    return unless max_votes
+    max_votes = voting_phase.voting_rules&.dig('max_votes')&.to_i || 0
+    return if max_votes.zero?
 
-    current_votes = Vote.where(participant_id: participant_id, voting_phase_id: voting_phase_id).count
-    return unless current_votes >= max_votes
-
-    errors.add(:base, "Participant has reached the maximum of #{max_votes} votes for this phase")
+    current_votes = participant.votes.where(voting_phase_id: voting_phase.id).count
+    current_votes += 1 unless persisted?
+    errors.add(:base, "exceeds maximum votes of #{max_votes} for this phase") if current_votes > max_votes
   end
 end

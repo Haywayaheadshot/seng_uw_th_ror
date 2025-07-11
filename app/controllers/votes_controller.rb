@@ -1,118 +1,95 @@
 class VotesController < ApplicationController
-  # before_action :authenticate_user!, except: [:index]
-  before_action :set_voting_phase, only: %i[new create]
-
-  def new
-    if @voting_phase.nil?
-      redirect_to budget_cycles_path, alert: 'No active voting phase available.'
-      ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-      return
-    end
-    @budget_projects = @voting_phase.budget_cycle.budget_projects.where(deleted_at: nil)
-    @participant = Participant.find_by(id: params[:participant_id]) || Participant.new
-    @vote = Vote.new
+  def index
+    @budget_cycle = BudgetCycle.find(params[:budget_cycle_id])
+    @votes = @budget_cycle.votes
   end
 
-  def create
+  def new
+    @budget_cycle = BudgetCycle.find(params[:budget_cycle_id])
+    @voting_phase = @budget_cycle.current_voting_phase
+    if @voting_phase.nil?
+      redirect_to root_path, alert: 'No active voting phase available.'
+      return
+    end
+    @vote = Vote.new
+    @budget_projects = filter_and_sort_projects
+    @participants = Participant.all
+  end
+
+  def create # rubocop:disable Metrics/AbcSize,Metrics/MethodLength
+    @budget_cycle = BudgetCycle.find(params[:budget_cycle_id])
+    @voting_phase = @budget_cycle.current_voting_phase
     if @voting_phase.nil?
       respond_to do |format|
-        format.html do
-          redirect_to budget_cycles_path, alert: 'No active voting phase available.'
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
+        format.html { redirect_to root_path, alert: 'No active voting phase available.' }
         format.json { render json: { error: 'No active voting phase available' }, status: :unprocessable_entity }
       end
       return
     end
+    @vote = Vote.new(vote_params.merge(voting_phase_id: @voting_phase.id, created_at: Time.current))
+    @budget_project = BudgetProject.find(vote_params[:budget_project_id])
 
-    unless eligible_to_vote?(@voting_phase)
+    if @budget_project.budget_category && !within_category_limit?(@budget_project)
+      @vote.errors.add(:base, "Cannot vote: category #{@budget_project.budget_category.name} exceeds spending limit")
       respond_to do |format|
-        format.html do
-          redirect_to budget_cycles_path, alert: 'You are not eligible to vote.'
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-        format.json { render json: { error: 'You are not eligible to vote' }, status: :forbidden }
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace('flash_container', partial: 'shared/flash', locals: { alert: 'You are not eligible to vote.' })
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-      end
-      return
-    end
-
-    if user_votes_count >= @voting_phase.max_votes_per_user
-      respond_to do |format|
-        format.html do
-          redirect_to budget_cycles_path, alert: 'You have reached the maximum votes.'
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-        format.json { render json: { error: 'You have reached the maximum votes' }, status: :unprocessable_entity }
-        format.turbo_stream do
-          render turbo_stream: turbo_stream.replace('flash_container', partial: 'shared/flash', locals: { alert: 'You have reached the maximum votes.' })
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-      end
-      return
-    end
-
-    @vote = @voting_phase.votes.build(vote_params.merge(user: current_user, created_at: Time.current))
-    respond_to do |format|
-      @budget_projects = @voting_phase.budget_cycle.budget_projects.where(deleted_at: nil)
-      if @vote.save
-        @participant = Participant.find_by(id: vote_params[:participant_id]) || Participant.new
-        format.html do
-          redirect_to budget_cycle_votes_path(@budget_cycle), notice: 'Vote cast successfully.'
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-        format.json { render json: @vote.as_json(only: %i[id voting_phase_id budget_project_id participant_id created_at]), status: :created }
-        format.turbo_stream do
-          @vote = Vote.new
-          render turbo_stream: turbo_stream.replace('vote_form', partial: 'votes/form',
-                                                                 locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participant: @participant })
-          ClearFlashJob.set(wait: 3.seconds).perform_later(session.id.to_s)
-        end
-      else
-        @budget_projects = @voting_phase.budget_cycle.budget_projects.where(deleted_at: nil)
-        @participant = Participant.find_by(id: vote_params[:participant_id]) || Participant.new
+        @budget_projects = filter_and_sort_projects
+        @participants = Participant.all
         format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @vote.errors, status: :unprocessable_entity }
         format.turbo_stream do
           render turbo_stream: turbo_stream.replace('vote_form', partial: 'votes/form',
-                                                                 locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participant: @participant })
+                                                                 locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participants: @participants })
         end
       end
+      return
     end
-  end
 
-  def index
-    @budget_cycle = BudgetCycle.find(params[:budget_cycle_id])
     respond_to do |format|
-      format.html
-      format.turbo_stream
+      @budget_projects = filter_and_sort_projects
+      @participants = Participant.all
+      if @vote.save
+        format.html { redirect_to budget_cycle_votes_path(@budget_cycle), notice: 'Vote cast successfully.' }
+        format.json { render json: @vote.as_json(only: %i[id voting_phase_id budget_project_id participant_id created_at]), status: :created }
+        format.turbo_stream do
+          @vote = Vote.new
+          render turbo_stream: turbo_stream.replace('vote_form', partial: 'votes/form',
+                                                                 locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participants: @participants })
+        end
+      else
+        @participants = Participant.all
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: @vote.errors, status: :unprocessable_entity }
+        format.turbo_stream do
+          render turbo_stream: turbo_stream.replace('vote_form', partial: 'votes/form',
+                                                                 locals: { vote: @vote, budget_cycle: @budget_cycle, budget_projects: @budget_projects, participants: @participants })
+        end
+      end
     end
   end
 
   private
 
-  def set_voting_phase
-    @budget_cycle = BudgetCycle.find(params[:budget_cycle_id])
-    @voting_phase = @budget_cycle.current_voting_phase
+  def vote_params
+    params.require(:vote).permit(:budget_project_id, :participant_id)
   end
 
-  def eligible_to_vote?(phase)
-    case phase.participant_eligibility
-    when 'all' then true
-    when 'admins' then current_user&.admin?
-    when 'registered_users' then current_user.present?
-    else false
+  def filter_and_sort_projects
+    projects = @budget_cycle.budget_projects
+    projects = projects.where('impact_metrics->>\'estimated_beneficiaries\' >= ?', params[:filter][:min_beneficiaries].to_i) if params[:filter]&.[](:min_beneficiaries).present?
+    projects = projects.where('impact_metrics->>\'sustainability_score\' >= ?', params[:filter][:min_sustainability].to_i) if params[:filter]&.[](:min_sustainability).present?
+    sort_field = params[:sort]&.to_sym
+    if %i[estimated_beneficiaries sustainability_score].include?(sort_field)
+      projects.order("impact_metrics->>'#{sort_field}' DESC")
+    else
+      projects.order(sort_field || :name)
     end
   end
 
-  def user_votes_count
-    @voting_phase.votes.where(user: current_user).count
-  end
+  def within_category_limit?(project)
+    return true unless project.budget_category && project.budget_cycle
 
-  def vote_params
-    params.require(:vote).permit(:budget_project_id, :participant_id)
+    total_allocated = project.budget_category.allocated_amount(project.budget_cycle)
+    allowed_limit = project.budget_cycle.total_budget * (project.budget_category.spending_limit_percentage / 100.0)
+    total_allocated <= allowed_limit
   end
 end

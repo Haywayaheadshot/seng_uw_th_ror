@@ -1,52 +1,48 @@
-<div class="bg-white p-6 rounded shadow mb-6">
-       <h3 class="text-lg font-medium">Budget Cycle: <%= report[:budget_cycle].name %></h3>
-       <p class="text-gray-600">Voting Phase: <%= report[:voting_phase].name %> (<%= report[:voting_phase].start_date %> to <%= report[:voting_phase].end_date %>)</p>
-       
-       <h4 class="text-md font-semibold mt-4">Vote Counts by Project</h4>
-       <% if report[:vote_counts].empty? %>
-         <p class="text-gray-600">No votes recorded yet.</p>
-       <% else %>
-         <div class="overflow-x-auto">
-           <table class="w-full bg-white shadow-md rounded-lg">
-             <thead>
-               <tr class="bg-gray-200">
-                 <th class="py-2 px-4 text-left">Project</th>
-                 <th class="py-2 px-4 text-left">Votes</th>
-               </tr>
-             </thead>
-             <tbody>
-               <% report[:vote_counts].each do |project, votes| %>
-                 <tr class="border-b">
-                   <td class="py-2 px-4"><%= project %></td>
-                   <td class="py-2 px-4"><%= votes %></td>
-                 </tr>
-               <% end %>
-             </tbody>
-           </table>
-         </div>
-       <% end %>
+<div class="mb-4 p-4 border rounded bg-gray-50">
+  <h3 class="text-lg font-medium">Budget Cycle: <%= report[:budget_cycle].name %></h3>
+  <h4 class="font-medium">Voting Phase: <%= report[:voting_phase].name %> (<%= report[:voting_phase].start_date %> to <%= report[:voting_phase].end_date %>)</h4>
+  
+  <h5 class="mt-2 font-medium">Vote Counts by Project</h5>
+  <% if report[:vote_counts].empty? %>
+    <p class="text-gray-500">No votes recorded yet.</p>
+  <% else %>
+    <table class="table-auto w-full border-collapse">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border px-4 py-2">Project</th>
+          <th class="border px-4 py-2">Votes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% report[:vote_counts].each do |project, count| %>
+          <tr>
+            <td class="border px-4 py-2"><%= project %></td>
+            <td class="border px-4 py-2"><%= count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 
-       <h4 class="text-md font-semibold mt-4">Participant Age Distribution</h4>
-       <% if report[:age_distribution].empty? %>
-         <p class="text-gray-600">No participant data available.</p>
-       <% else %>
-         <div class="overflow-x-auto">
-           <table class="w-full bg-white shadow-md rounded-lg">
-             <thead>
-               <tr class="bg-gray-200">
-                 <th class="py-2 px-4 text-left">Age Range</th>
-                 <th class="py-2 px-4 text-left">Participants</th>
-               </tr>
-             </thead>
-             <tbody>
-               <% report[:age_distribution].each do |age_range, count| %>
-                 <tr class="border-b">
-                   <td class="py-2 px-4"><%= age_range %></td>
-                   <td class="py-2 px-4"><%= count %></td>
-                 </tr>
-               <% end %>
-             </tbody>
-           </table>
-         </div>
-       <% end %>
-     </div>
+  <h5 class="mt-2 font-medium">Participant Age Distribution</h5>
+  <% if report[:age_distribution].empty? %>
+    <p class="text-gray-500">No participant data available.</p>
+  <% else %>
+    <table class="table-auto w-full border-collapse">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border px-4 py-2">Age Range</th>
+          <th class="border px-4 py-2">Participants</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% report[:age_distribution].each do |range, count| %>
+          <tr>
+            <td class="border px-4 py-2"><%= range %></td>
+            <td class="border px-4 py-2"><%= count %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

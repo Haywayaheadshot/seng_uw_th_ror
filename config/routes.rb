@@ -1,13 +1,14 @@
 Rails.application.routes.draw do
   namespace :admin do
     get 'dashboards/index', to: 'dashboards#index'
+    get 'dashboards/impact_report/:budget_cycle_id', to: 'dashboards#impact_report', as: :impact_report
+
     resources :budget_categories, only: %i[index new create edit update destroy]
-
-    resources :budget_cycles, only: %i[index new create edit update destroy show]
-
     resources :budget_cycles do
       resources :voting_phases
+      resources :budget_projects
     end
+    resources :participants
   end
 
   resources :budget_cycles, only: [:index] do
