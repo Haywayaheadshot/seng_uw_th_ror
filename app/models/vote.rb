@@ -19,14 +19,14 @@ class Vote < ApplicationRecord
   def participant_eligible
     return unless voting_phase && participant
 
-    min_age = voting_phase.participant_eligibility&.dig('min_age')&.to_i || 0
+    min_age = voting_phase.participant_eligibility&.dig('min_age').to_i
     errors.add(:participant_id, "must be at least #{min_age} years old") if participant.age < min_age
   end
 
   def within_max_votes
     return unless voting_phase && participant
 
-    max_votes = voting_phase.voting_rules&.dig('max_votes')&.to_i || 0
+    max_votes = voting_phase.voting_rules&.dig('max_votes').to_i
     return if max_votes.zero?
 
     current_votes = participant.votes.where(voting_phase_id: voting_phase.id).count

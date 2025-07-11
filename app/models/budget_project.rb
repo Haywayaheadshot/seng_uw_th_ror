@@ -31,7 +31,7 @@ class BudgetProject < ApplicationRecord
     return unless impact_metrics
 
     errors.add(:impact_metrics, 'must include estimated_beneficiaries as an integer') unless impact_metrics['estimated_beneficiaries'].is_a?(Integer)
-    errors.add(:impact_metrics, 'must include timeline as a string') unless impact_metrics['timeline']&.is_a?(String)
+    errors.add(:impact_metrics, 'must include timeline as a string') unless impact_metrics['timeline'].is_a?(String)
     errors.add(:impact_metrics, 'must include sustainability_score as an integer') unless impact_metrics['sustainability_score'].is_a?(Integer)
     errors.add(:impact_metrics, 'sustainability_score must be between 1 and 10') unless impact_metrics['sustainability_score'].between?(1, 10)
   end
