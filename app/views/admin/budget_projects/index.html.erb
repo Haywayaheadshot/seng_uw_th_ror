@@ -1,0 +1,49 @@
+<%= render 'shared/nav' %>
+<div class="container mx-auto p-4 flex flex-col">
+  <h1 class="text-2xl font-bold mb-4">Budget Projects for <%= @budget_cycle.name %></h1>
+  
+  <%= link_to 'New Project', new_admin_budget_cycle_budget_project_path(@budget_cycle), class: 'text-white bg-blue-500 py-2 px-4 rounded hover:bg-green-600 mb-4 inline-block', style: 'max-width: 200px; margin-bottom: 10px' %>
+  
+  <% if @budget_projects.empty? %>
+    <p class="text-gray-500">No projects assigned to this cycle.</p>
+  <% else %>
+    <table class="table-auto w-full border-collapse mb-4">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border px-4 py-2">Name</th>
+          <th class="border px-4 py-2">Category</th>
+          <th class="border px-4 py-2">Proposed Budget</th>
+          <th class="border px-4 py-2">Estimated Beneficiaries</th>
+          <th class="border px-4 py-2">Timeline</th>
+          <th class="border px-4 py-2">Sustainability Score</th>
+          <th class="border px-4 py-2">Approved</th>
+          <th class="border px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @budget_projects.each do |project| %>
+          <tr>
+            <td class="border px-4 py-2"><%= project.name %></td>
+            <td class="border px-4 py-2"><%= project.budget_category&.name || 'N/A' %></td>
+            <td class="border px-4 py-2"><%= number_to_currency(project.proposed_budget) %></td>
+            <td class="border px-4 py-2"><%= project.impact_metrics['estimated_beneficiaries'] || 'N/A' %></td>
+            <td class="border px-4 py-2"><%= project.impact_metrics['timeline'] || 'N/A' %></td>
+            <td class="border px-4 py-2"><%= project.impact_metrics['sustainability_score'] || 'N/A' %></td>
+            <td class="border px-4 py-2"><%= project.approved ? 'Yes' : 'No' %></td>
+            <td class="border px-4 py-2">
+              <%= link_to 'Edit', edit_admin_budget_cycle_budget_project_path(@budget_cycle, project), class: 'text-blue-500 hover:underline' %>
+              <%= button_to 'Delete', admin_budget_cycle_budget_project_path(@budget_cycle, project), method: :delete, class: 'text-red-500 hover:underline ml-2' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <div class="mt-4 space-x-2">
+    <%= link_to 'Back to Budget Cycle', admin_budget_cycle_path(@budget_cycle), class: 'text-blue-500 hover:underline' %>
+    <%= link_to 'View Impact Report', admin_impact_report_path(@budget_cycle), class: 'text-blue-500 hover:underline' %>
+    <%= link_to 'Manage Categories', admin_budget_categories_path(budget_cycle_id: @budget_cycle.id), class: 'text-blue-500 hover:underline' %>
+    <%= link_to 'Manage Voting Phases', admin_budget_cycle_voting_phases_path(@budget_cycle), class: 'text-blue-500 hover:underline' %>
+  </div>
+</div>

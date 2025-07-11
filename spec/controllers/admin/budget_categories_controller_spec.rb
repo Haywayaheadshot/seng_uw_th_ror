@@ -2,150 +2,125 @@ require 'rails_helper'
 
 RSpec.describe Admin::BudgetCategoriesController, type: :controller do
   let(:budget_cycle) { BudgetCycle.create!(name: '2025 Cycle', total_budget: 1_000_000, start_date: Date.today, end_date: Date.today + 1.year) }
+  let(:budget_category) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40, budget_cycle: budget_cycle) }
 
   describe 'GET #index' do
-    let!(:category1) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40.0) }
-    let!(:category2) { BudgetCategory.create!(name: 'Social Programs', spending_limit_percentage: 30.0) }
-    let(:presenter) { BudgetCategoriesPresenter.new(budget_cycle_id: budget_cycle.id) }
+    let(:presenter) { instance_double(BudgetCategoriesPresenter, budget_categories: [budget_category]) }
 
     before do
-      category1.budgets.create!(title: 'Road Repair', total_amount: 200_000, budget_cycle: budget_cycle)
+      allow(BudgetCategoriesPresenter).to receive(:new).and_return(presenter)
     end
 
-    it 'returns all categories as HTML' do
-      get :index
-      expect(assigns(:budget_categories)).to match_array([category1, category2])
+    it 'assigns presenter and budget categories' do
+      get :index, params: { budget_cycle_id: budget_cycle.id }
+      expect(assigns(:presenter)).to eq(presenter)
+      expect(assigns(:budget_categories)).to eq([budget_category])
+      expect(assigns(:budget_cycle)).to eq(budget_cycle)
       expect(response).to render_template(:index)
     end
 
-    it 'returns all categories as JSON with utilization_rate' do
-      get :index, format: :json, params: { budget_cycle_id: budget_cycle.id }
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to eq(
-        [
-          { 'id' => category1.id, 'name' => 'Infrastructure', 'spending_limit_percentage' => 40.0, 'utilization_rate' => 20.0, 'created_at' => category1.created_at.as_json,
-            'updated_at' => category1.updated_at.as_json },
-          { 'id' => category2.id, 'name' => 'Social Programs', 'spending_limit_percentage' => 30.0, 'utilization_rate' => 0.0, 'created_at' => category2.created_at.as_json,
-            'updated_at' => category2.updated_at.as_json }
-        ]
-      )
+    it 'handles search params' do
+      allow(BudgetCategoriesPresenter).to receive(:new).with('infrastructure', budget_cycle.id.to_s).and_return(presenter)
+      get :index, params: { search: 'infrastructure', budget_cycle_id: budget_cycle.id }
+      expect(assigns(:budget_categories)).to eq([budget_category])
     end
 
-    it 'filters categories by search query as JSON' do
-      get :index, format: :json, params: { search: 'Infra', budget_cycle_id: budget_cycle.id }
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to eq(
-        [{ 'id' => category1.id, 'name' => 'Infrastructure', 'spending_limit_percentage' => 40.0, 'utilization_rate' => 20.0, 'created_at' => category1.created_at.as_json,
-           'updated_at' => category1.updated_at.as_json }]
-      )
-    end
-
-    it 'returns correct JSON format' do
-      expect(presenter.to_json).to include(
-        a_hash_including(
-          'name' => 'Infrastructure',
-          'spending_limit_percentage' => 40.0,
-          'utilization_rate' => 20.0
-        )
-      )
+    it 'handles missing budget_cycle_id' do
+      get :index
+      expect(assigns(:budget_cycle)).to be_nil
+      expect(response).to render_template(:index)
     end
   end
 
   describe 'GET #new' do
-    it 'renders new template for HTML' do
-      get :new
+    it 'assigns a new budget category and budget cycle' do
+      get :new, params: { budget_cycle_id: budget_cycle.id }
+      expect(assigns(:budget_category)).to be_a_new(BudgetCategory)
+      expect(assigns(:budget_cycle)).to eq(budget_cycle)
       expect(response).to render_template(:new)
     end
 
-    it 'returns method not allowed for JSON' do
-      get :new, format: :json
-      expect(response.parsed_body).to eq({ 'error' => 'Use POST to create a category' })
-      expect(response).to have_http_status(:method_not_allowed)
+    it 'handles missing budget_cycle_id' do
+      get :new
+      expect(assigns(:budget_category)).to be_a_new(BudgetCategory)
+      expect(assigns(:budget_cycle)).to be_nil
+      expect(response).to render_template(:new)
     end
   end
 
   describe 'POST #create' do
-    let(:valid_params) { { budget_category: { name: 'Education', spending_limit_percentage: 20.0 } } }
-    let(:invalid_params) { { budget_category: { name: '', spending_limit_percentage: 20.0 } } }
+    context 'with valid params' do
+      let(:valid_params) { { name: 'Social Programs', spending_limit_percentage: 30, budget_cycle_id: budget_cycle.id } }
 
-    it 'creates a category and redirects for HTML' do
-      post :create, params: valid_params
-      expect(response).to redirect_to(admin_budget_categories_path)
-      expect(flash[:notice]).to eq('Category created successfully.')
+      it 'creates a new budget category and redirects' do
+        expect do
+          post :create, params: { budget_category: valid_params }
+        end.to change(BudgetCategory, :count).by(1)
+        expect(response).to redirect_to(admin_budget_categories_path(budget_cycle_id: budget_cycle.id))
+        expect(flash[:notice]).to eq('Category created successfully.')
+      end
     end
 
-    it 'creates a category and returns JSON' do
-      post :create, params: valid_params, format: :json
-      expect(response.parsed_body['name']).to eq('Education')
-      expect(response).to have_http_status(:created)
-    end
+    context 'with invalid params' do
+      let(:invalid_params) { { name: '', spending_limit_percentage: -10, budget_cycle_id: budget_cycle.id } }
 
-    it 'returns errors for invalid params in JSON' do
-      post :create, params: invalid_params, format: :json
-      expect(response.parsed_body).to eq({ 'errors' => ['Name can\'t be blank'] })
-      expect(response).to have_http_status(:unprocessable_entity)
+      it 'does not create a budget category and re-renders new' do
+        expect do
+          post :create, params: { budget_category: invalid_params }
+        end.not_to change(BudgetCategory, :count)
+        expect(assigns(:budget_cycle)).to eq(budget_cycle)
+        expect(response).to render_template(:new)
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 
   describe 'GET #edit' do
-    let(:category) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40.0) }
-
-    it 'renders edit template for HTML' do
-      get :edit, params: { id: category.id }
+    it 'assigns the budget category and budget cycle' do
+      get :edit, params: { id: budget_category.id }
+      expect(assigns(:budget_category)).to eq(budget_category)
+      expect(assigns(:budget_cycle)).to eq(budget_cycle)
       expect(response).to render_template(:edit)
-    end
-
-    it 'returns method not allowed for JSON' do
-      get :edit, params: { id: category.id }, format: :json
-      expect(response.parsed_body).to eq({ 'error' => 'Use PATCH/PUT to update a category' })
-      expect(response).to have_http_status(:method_not_allowed)
     end
   end
 
   describe 'PATCH #update' do
-    let(:category) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40.0) }
-    let(:valid_params) { { id: category.id, budget_category: { name: 'Updated Infrastructure', spending_limit_percentage: 50.0 } } }
-    let(:invalid_params) { { id: category.id, budget_category: { name: '', spending_limit_percentage: 50.0 } } }
+    context 'with valid params' do
+      let(:valid_params) { { name: 'Updated Infrastructure', spending_limit_percentage: 50 } }
 
-    it 'updates a category and redirects for HTML' do
-      patch :update, params: valid_params
-      expect(response).to redirect_to(admin_budget_categories_path)
-      expect(flash[:notice]).to eq('Category updated successfully.')
+      it 'updates the budget category and redirects' do
+        patch :update, params: { id: budget_category.id, budget_category: valid_params }
+        budget_category.reload
+        expect(budget_category.name).to eq('Updated Infrastructure')
+        expect(budget_category.spending_limit_percentage).to eq(50)
+        expect(response).to redirect_to(admin_budget_categories_path(budget_cycle_id: budget_cycle.id))
+        expect(flash[:notice]).to eq('Category updated successfully.')
+      end
     end
 
-    it 'updates a category and returns JSON' do
-      patch :update, params: valid_params, format: :json
-      expect(response.parsed_body['name']).to eq('Updated Infrastructure')
-      expect(response).to have_http_status(:ok)
-    end
+    context 'with invalid params' do
+      let(:invalid_params) { { name: '', spending_limit_percentage: -10 } }
 
-    it 'returns errors for invalid params in JSON' do
-      patch :update, params: invalid_params, format: :json
-      expect(response.parsed_body).to eq({ 'errors' => ['Name can\'t be blank'] })
-      expect(response).to have_http_status(:unprocessable_entity)
+      it 'does not update the budget category and re-renders edit' do
+        patch :update, params: { id: budget_category.id, budget_category: invalid_params }
+        budget_category.reload
+        expect(budget_category.name).not_to eq('')
+        expect(budget_category.spending_limit_percentage).not_to eq(-10)
+        expect(assigns(:budget_cycle)).to eq(budget_cycle)
+        expect(response).to render_template(:edit)
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 
   describe 'DELETE #destroy' do
-    let(:category) { BudgetCategory.create!(name: 'Infrastructure', spending_limit_percentage: 40.0) }
-    let!(:budget) { category.budgets.create!(title: 'Road Repair', total_amount: 200_000, budget_cycle: budget_cycle) }
-
-    it 'deletes a category and associated budgets and redirects for HTML' do
-      expect { delete :destroy, params: { id: category.id } }.to change { Budget.count }.by(-1)
-      expect(response).to redirect_to(admin_budget_categories_path)
-      expect(flash[:notice]).to eq('Category deleted successfully. 1 associated budget(s) also deleted.')
-    end
-
-    it 'deletes a category and associated budgets and returns JSON' do
-      expect { delete :destroy, params: { id: category.id }, format: :json }.to change { Budget.count }.by(-1)
-      expect(response.parsed_body).to eq({ 'message' => 'Category deleted successfully. 1 associated budget(s) also deleted.' })
-      expect(response).to have_http_status(:ok)
-    end
-
-    it 'returns not found for non-existent category in JSON' do
-      delete :destroy, params: { id: 999 }, format: :json
-      expect(response.parsed_body).to eq({ 'error' => 'Category not found' })
-      expect(response).to have_http_status(:not_found)
+    it 'deletes the budget category and redirects' do
+      budget_category
+      expect do
+        delete :destroy, params: { id: budget_category.id }
+      end.to change(BudgetCategory, :count).by(-1)
+      expect(response).to redirect_to(admin_budget_categories_path(budget_cycle_id: budget_cycle.id))
+      expect(flash[:notice]).to eq('Category deleted successfully.')
     end
   end
 end

@@ -1,0 +1,30 @@
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">Impact Report for <%= @budget_cycle.name %></h1>
+<% if @approved_projects.empty? %>
+  <p class="text-gray-500">No approved projects available.</p>
+<% else %>
+  <table class="table-auto w-full border-collapse">
+    <thead>
+      <tr class="bg-gray-200">
+        <th class="border px-4 py-2">Name</th>
+        <th class="border px-4 py-2">Category</th>
+        <th class="border px-4 py-2">Proposed Budget</th>
+        <th class="border px-4 py-2">Estimated Beneficiaries</th>
+        <th class="border px-4 py-2">Timeline</th>
+        <th class="border px-4 py-2">Sustainability Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @approved_projects.each do |project| %>
+        <tr>
+          <td class="border px-4 py-2"><%= project.name %></td>
+          <td class="border px-4 py-2"><%= project.budget_category.name %></td>
+          <td class="border px-4 py-2"><%= number_to_currency(project.proposed_budget) %></td>
+          <td class="border px-4 py-2"><%= project.estimated_beneficiaries %></td>
+          <td class="border px-4 py-2"><%= project.timeline %></td>
+          <td class="border px-4 py-2"><%= project.sustainability_score %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>

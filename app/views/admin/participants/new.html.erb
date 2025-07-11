@@ -1,0 +1,24 @@
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">New Participant</h1>
+<%= form_with model: @participant, url: admin_participants_path, local: true, class: "space-y-4" do |form| %>
+  <% if @participant.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <h2><%= pluralize(@participant.errors.count, "error") %> prohibited this participant from being saved:</h2>
+      <ul class="list-disc ml-5">
+        <% @participant.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div>
+    <%= form.label :name, class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.text_field :name, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label :age, class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.number_field :age, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <%= form.submit 'Create Participant', class: 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600' %>
+  <%= link_to 'Back', admin_participants_path, class: 'text-blue-500 hover:underline ml-2' %>
+<% end %>

@@ -1,0 +1,36 @@
+<%= form_with model: @budget_cycle, url: @budget_cycle.persisted? ? admin_budget_cycle_path(@budget_cycle) : admin_budget_cycles_path, local: true, class: "space-y-4" do |form| %>
+  <% if @budget_cycle.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <h2><%= pluralize(@budget_cycle.errors.count, "error") %> prohibited this budget cycle from being saved:</h2>
+      <ul class="list-disc ml-5">
+        <% @budget_cycle.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.text_field :name, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :total_budget, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.number_field :total_budget, step: 0.01, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :start_date, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.date_field :start_date, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.label :end_date, class: "block text-sm font-medium text-gray-700" %>
+    <%= form.date_field :end_date, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm" %>
+  </div>
+
+  <div>
+    <%= form.submit class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600" %>
+  </div>
+<% end %>

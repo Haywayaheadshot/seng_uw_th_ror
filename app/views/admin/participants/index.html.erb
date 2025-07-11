@@ -1,0 +1,25 @@
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">Participants</h1>
+<%= link_to 'New Participant', new_admin_participant_path, class: 'bg-green-500 text-blue-500 py-2 px-4 rounded hover:bg-green-600 mb-4 inline-block' %>
+<table class="table-auto w-full border-collapse">
+  <thead>
+    <tr class="bg-gray-200">
+      <th class="border px-4 py-2">Name</th>
+      <th class="border px-4 py-2">Age</th>
+      <th class="border px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @participants.each do |participant| %>
+      <tr>
+        <td class="border px-4 py-2"><%= participant.name %></td>
+        <td class="border px-4 py-2"><%= participant.age %></td>
+        <td class="border px-4 py-2">
+          <%= link_to 'Show', admin_participant_path(participant), class: 'text-blue-500 hover:underline' %>
+          <%= link_to 'Edit', edit_admin_participant_path(participant), class: 'text-blue-500 hover:underline ml-2' %>
+          <%= button_to 'Delete', admin_participant_path(participant), method: :delete, class: 'text-red-500 hover:underline ml-2' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

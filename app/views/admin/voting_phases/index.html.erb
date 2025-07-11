@@ -1,0 +1,34 @@
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">Voting Phases for <%= @budget_cycle.name %></h1>
+<%= link_to 'New Voting Phase', new_admin_budget_cycle_voting_phase_path(@budget_cycle), class: 'bg-green-500 text-blue-500 py-2 px-4 rounded hover:bg-green-600 mb-4 inline-block' %>
+<table class="table-auto w-full border-collapse">
+  <thead>
+    <tr class="bg-gray-200">
+      <th class="border px-4 py-2">Name</th>
+      <th class="border px-4 py-2">Status</th>
+      <th class="border px-4 py-2">Start Date</th>
+      <th class="border px-4 py-2">End Date</th>
+      <th class="border px-4 py-2">Voting Rules</th>
+      <th class="border px-4 py-2">Eligibility</th>
+      <th class="border px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @voting_phases.each do |phase| %>
+      <tr>
+        <td class="border px-4 py-2"><%= phase.name %></td>
+        <td class="border px-4 py-2"><%= phase.phase_status.humanize %></td>
+        <td class="border px-4 py-2"><%= phase.start_date %></td>
+        <td class="border px-4 py-2"><%= phase.end_date %></td>
+        <td class="border px-4 py-2">Max Votes: <%= phase.voting_rules['max_votes'] %></td>
+        <td class="border px-4 py-2">Min Age: <%= phase.participant_eligibility['min_age'] %></td>
+        <td class="border px-4 py-2">
+          <%= link_to 'Show', admin_budget_cycle_voting_phase_path(@budget_cycle, phase), class: 'text-blue-500 hover:underline' %>
+          <%= link_to 'Edit', edit_admin_budget_cycle_voting_phase_path(@budget_cycle, phase), class: 'text-blue-500 hover:underline ml-2' %>
+          <%= button_to 'Delete', admin_budget_cycle_voting_phase_path(@budget_cycle, phase), method: :delete, class: 'text-red-500 hover:underline ml-2' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<%= link_to 'Back to Budget Cycles', admin_budget_cycles_path, class: 'mt-4 inline-block text-blue-500 hover:underline' %>

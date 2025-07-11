@@ -1,64 +1,38 @@
-<div class="min-h-screen bg-gray-100">
-  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
-    <h1 class="text-2xl font-bold text-left">Budget Categories</h1>
-  </header>
-  <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-    <% if notice %>
-      <p id="notice" class="text-green-600 mb-4 bg-green-100 p-3 rounded transition-opacity duration-500" data-controller="fade"><%= notice %></p>
-      <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const notice = document.getElementById('notice');
-          if (notice) {
-            setTimeout(() => {
-              notice.style.display = 'none';
-              setTimeout(() => notice.remove(), 500);
-            }, 3000);
-          }
-        });
-      </script>
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">Budget Categories</h1>
+<%= form_with url: admin_budget_categories_path, method: :get, local: true, class: "mb-4" do |form| %>
+  <div class="flex space-x-4">
+    <%= form.label :search, 'Search by name', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.text_field :search, value: params[:search], class: 'mt-1 block w-1/4 border-gray-300 rounded-md shadow-sm' %>
+    <%= form.label :budget_cycle_id, 'Budget Cycle', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.select :budget_cycle_id, BudgetCycle.all.map { |c| [c.name, c.id] }, { include_blank: 'All Cycles' }, class: 'mt-1 block w-1/4 border-gray-300 rounded-md shadow-sm' %>
+    <%= form.submit 'Filter', class: 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600' %>
+  </div>
+<% end %>
+<% if @budget_cycle %>
+  <p class="mb-2">Showing categories for <%= @budget_cycle.name %></p>
+<% end %>
+<%= link_to 'New Category', new_admin_budget_category_path(budget_cycle_id: params[:budget_cycle_id]), class: 'bg-green-500 text-blue-500 py-2 px-4 rounded hover:bg-green-600 mb-4 inline-block' %>
+<table class="table-auto w-full border-collapse">
+  <thead>
+    <tr class="bg-gray-200">
+      <th class="border px-4 py-2">Name</th>
+      <th class="border px-4 py-2">Spending Limit (%)</th>
+      <th class="border px-4 py-2">Utilization (%)</th>
+      <th class="border px-4 py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @budget_categories.each do |category| %>
+      <tr>
+        <td class="border px-4 py-2"><%= category.name %></td>
+        <td class="border px-4 py-2"><%= category.spending_limit_percentage %></td>
+        <td class="border px-4 py-2"><%= category.utilization_rate(@budget_cycle || category.budget_cycle) %></td>
+        <td class="border px-4 py-2">
+          <%= link_to 'Edit', edit_admin_budget_category_path(category), class: 'text-blue-500 hover:underline' %>
+          <%= link_to 'Delete', admin_budget_category_path(category), method: :delete, data: { confirm: 'Are you sure?' }, class: 'text-red-500 hover:underline ml-2' %>
+        </td>
+      </tr>
     <% end %>
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-center sm:space-x-4">
-      <%= link_to "Dashboard", admin_dashboards_index_path, class: "bg-white text-blue-600 py-2 px-4 rounded hover:bg-gray-200 mb-4 sm:mb-0" %>
-      <%= form_with url: admin_budget_categories_path, method: :get, local: true, class: "flex-1" do |form| %>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
-          <%= form.text_field :search, value: params[:search], placeholder: "Search by category name", class: "w-full sm:w-1/2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-          <%= form.select :budget_cycle_id, BudgetCycle.without_deleted.map { |cycle| [cycle.name, cycle.id] }, { include_blank: 'Select Budget Cycle (default: latest)' }, class: "w-full sm:w-1/2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" %>
-          <%= form.submit "Search", class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-2 sm:mt-0 sm:w-auto" %>
-        </div>
-      <% end %>
-      <%= link_to "New Category", new_admin_budget_category_path, class: "bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 mt-2 sm:mt-0" %>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full bg-white shadow-md rounded-lg">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="py-2 px-4 text-left">Name</th>
-            <th class="py-2 px-4 text-left">Spending Limit (%)</th>
-            <th class="py-2 px-4 text-left">Utilization (%)</th>
-            <th class="py-2 px-4 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% @budget_categories.each do |category| %>
-            <tr class="border-b <%= category.utilization_rate(@budget_cycle) > category.spending_limit_percentage ? 'bg-red-100' : '' %>">
-              <td class="py-2 px-4"><%= category.name %></td>
-              <td class="py-2 px-4"><%= category.spending_limit_percentage %></td>
-              <td class="py-2 px-4">
-                <% utilization = @budget_cycle ? category.utilization_rate(@budget_cycle) : 0 %>
-                <% allocated = @budget_cycle ? category.allocated_amount(@budget_cycle) : 0 %>
-                <div class="w-full bg-gray-200 rounded-full h-2.5" role="progressbar" aria-valuenow="<%= utilization %>" aria-valuemin="0" aria-valuemax="100" title="Allocated: $<%= number_with_delimiter(allocated) %>">
-                  <div class="h-2.5 rounded-full <%= utilization > category.spending_limit_percentage ? 'bg-red-500' : 'bg-blue-500' %>" style="width: <%= [utilization, 100].min %>%"></div>
-                </div>
-                <span class="text-sm text-gray-600"><%= utilization %>%</span>
-              </td>
-              <td class="py-2 px-4 flex space-x-2">
-                <%= link_to "Edit", edit_admin_budget_category_path(category), class: "text-blue-500 hover:underline" %>
-                <%= link_to "Delete", admin_budget_category_path(category), data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to delete #{category.name}? This will also soft-delete #{category.budgets.count} associated budget(s)." }, class: "text-red-500 hover:underline" %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    </div>
-  </main>
-</div>
+  </tbody>
+</table>

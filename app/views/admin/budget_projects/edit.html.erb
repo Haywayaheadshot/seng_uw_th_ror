@@ -1,0 +1,43 @@
+<%= render 'shared/nav' %>
+<h1 class="text-2xl font-bold mb-4">Edit Budget Project</h1>
+<%= form_with model: @budget_project, url: admin_budget_cycle_budget_project_path(@budget_cycle, @budget_project), local: true, class: "space-y-4" do |form| %>
+  <% if @budget_project.errors.any? %>
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <ul class="list-disc ml-5">
+        <% @budget_project.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+  <div>
+    <%= form.label :name, class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.text_field :name, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label :proposed_budget, class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.number_field :proposed_budget, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label :budget_category_id, 'Category', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.select :budget_category_id, @budget_cycle.budget_categories.map { |c| [c.name, c.id] }, { prompt: 'Select a category' }, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <h3 class="text-lg font-medium">Impact Metrics</h3>
+  <div>
+    <%= form.label 'impact_metrics[estimated_beneficiaries]', 'Estimated Beneficiaries', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.number_field :impact_metrics, name: 'budget_project[impact_metrics][estimated_beneficiaries]', value: @budget_project.impact_metrics&.dig('estimated_beneficiaries'), class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label 'impact_metrics[timeline]', 'Timeline', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.text_field :impact_metrics, name: 'budget_project[impact_metrics][timeline]', value: @budget_project.impact_metrics&.dig('timeline'), class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label 'impact_metrics[sustainability_score]', 'Sustainability Score (1-10)', class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.number_field :impact_metrics, name: 'budget_project[impact_metrics][sustainability_score]', value: @budget_project.impact_metrics&.dig('sustainability_score'), min: 1, max: 10, class: 'mt-1 block w-full border-gray-300 rounded-md shadow-sm' %>
+  </div>
+  <div>
+    <%= form.label :approved, class: 'block text-sm font-medium text-gray-700' %>
+    <%= form.check_box :approved, class: 'mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded' %>
+  </div>
+  <%= form.submit 'Update Project', class: 'bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600' %>
+<% end %>
