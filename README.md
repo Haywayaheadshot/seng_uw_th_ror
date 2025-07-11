@@ -88,22 +88,6 @@ bundle install
 rails db:setup
 ```
 
-### Option 2: Docker
-
-Build the Docker image:
-
-```bash
-docker build -t participatory-budgeting-system .
-```
-
-Run the Docker container:
-
-```bash
-docker run -p 3000:3000 -e DATABASE_URL=postgresql://postgres:password@db:5432 participatory-budgeting-system
-```
-
-*Note*: Ensure a PostgreSQL container is running and configured with the correct `DATABASE_URL`.
-
 ### Usage
 
 To run the project, execute the following command:
